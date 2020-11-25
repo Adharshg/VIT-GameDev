@@ -7,28 +7,52 @@ public class GameManager : MonoBehaviour
 {
 	public Text display;
 	public Text Run;
+	public Text Score;
+	public Text Bats;
+	public Text OABLeft;
 	public GameObject FirstPanel;
 	public GameObject SecondPanel;
+
+	public int Overs = 5;
+	public int BallsPerOver = 6;
+	public int batsmen = 5;
+
+	public AudioSource yay;
+	public AudioSource missed;
+	public AudioSource Out;
+	public AudioSource Victory;
 
 	private string grid = "";
 	private string bowler = "";
 	private string delivery;
+	private int score = 0;
+	private int balls = 6;
 
      // Start is called before the first frame update
     void Start()
     {
-    	FirstPanel.SetActive(true);
-    	SecondPanel.SetActive(false);
-        display.text = "Delivery type";
+    	Bowling();
+        Run.text = "-";
     }
 
     void Update(){
+
     	if (grid != "" && bowler != ""){
     		Batting();
     	}
+
+    	if (batsmen <= 0){
+    		GameOver();
+    	}
+
+    	if (score >= 60){
+    		Win();
+    	}
+
+    	Score.text = "Score: " + score;
+    	Bats.text = batsmen + " batsmen remaining";
     }
 
-    // Update is called once per frame
     public void SelectGrid(Button GridButton){
         grid = "" + GridButton.name;
     }
@@ -57,6 +81,7 @@ public class GameManager : MonoBehaviour
     		case 0:
     			if (chance < 0.9f){
     				Run.text = "0 runs";
+    				yay.Play();
     			}
     			else{
     				missed = true;
@@ -66,6 +91,7 @@ public class GameManager : MonoBehaviour
     		case 1:
     			if (chance < 0.9f){
     				Run.text = "1 runs";
+    				yay.Play();
     			}
     			else{
     				missed = true;
@@ -75,6 +101,7 @@ public class GameManager : MonoBehaviour
     		case 2:
     			if (chance < 0.85f){
     				Run.text = "2 runs";
+    				yay.Play();
     			}
     			else{
     				missed = true;
@@ -84,6 +111,7 @@ public class GameManager : MonoBehaviour
     		case 3:
     			if (chance < 0.6f){
     				Run.text = "3 runs";
+    				yay.Play();
     			}
     			else{
     				missed = true;
@@ -93,6 +121,7 @@ public class GameManager : MonoBehaviour
     		case 4:
     			if (chance < 0.35f){
     				Run.text = "4 runs!";
+    				Victory.Play();
     			}
     			else{
     				missed = true;
@@ -102,6 +131,7 @@ public class GameManager : MonoBehaviour
     		case 6:
     			if (chance < 0.2f){
     				Run.text = "6 runs!!";
+    				Victory.Play();
     			}
     			else{
     				missed = true;
@@ -115,15 +145,51 @@ public class GameManager : MonoBehaviour
     		}
     		else{
     			Run.text = "Out!";
+    			batsmen -= 1;
+    			Out.Play();
     		}
+    	}
+    	else{
+    		score += run;
+
     	}
     	Bowling();
 
     }
 
     public void Bowling(){
+
+    	if (balls > 1)
+    	balls -= 1;
+    	else
+    	OverOver();
+
+    	OABLeft.text = Overs + "." + balls + " overs left";
     	display.text = "Delivery type";
     	SecondPanel.SetActive(false);
     	FirstPanel.SetActive(true);
+    }
+
+    public void OverOver(){
+    	if (Overs > 0){
+    		balls = BallsPerOver;
+    		Overs -= 1;
+    	}
+    	else{
+    		GameOver();
+    	}
+
+    }
+
+    public void Win(){
+    	Debug.Log("Batsman win!");
+    	Time.timeScale = 0f;
+    	Application.Quit();
+    }
+
+    public void GameOver(){
+    	Debug.Log("Bowlers win!");
+    	Time.timeScale = 0f;
+    	Application.Quit();
     }
 }
